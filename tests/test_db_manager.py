@@ -31,7 +31,7 @@ def test_get_companies_and_vacancies_count(mock_connect: MagicMock, mock_db_para
     result = db_manager.get_companies_and_vacancies_count()
 
     assert len(result) == 2
-    assert result[0] == "Яндекс"
+    assert result[0][0] == "Яндекс"
     assert result[1][1] == 5
     mock_cursor.execute.assert_called_once()
 

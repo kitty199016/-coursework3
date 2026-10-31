@@ -14,14 +14,14 @@ def test_get_employer_info_success(mock_get: MagicMock, api_client: HeadHunterAP
     """Тест успешного получения информации о работодателе."""
     mock_response = MagicMock()
     mock_response.status_code = 200
-    mock_response.json.return_value = {"id": "1740", "name": "Яндекс", "alternate_url": "https://hh.ru"}
+    mock_response.json.return_value = {"id": "1740", "name": "Яндекс", "alternate_url": "https://api.hh.ru"}
     mock_get.return_value = mock_response
 
     result = api_client.get_employer_info("1740")
 
     assert result["name"] == "Яндекс"
     assert result["id"] == "1740"
-    mock_get.assert_called_once_with("https://hh.ru", headers=api_client._HeadHunterAPI__headers)
+    mock_get.assert_called_once_with("https://api.hh.ru/employers/1740", headers=api_client._HeadHunterAPI__headers)
 
 
 @patch("requests.get")
@@ -43,7 +43,7 @@ def test_get_employer_vacancies_success(mock_get: MagicMock, api_client: HeadHun
     mock_response.status_code = 200
     mock_response.json.return_value = {
         "items": [
-            {"id": "12345", "name": "Python Developer", "alternate_url": "https://hh.ru"}
+            {"id": "12345", "name": "Python Developer", "alternate_url": "https://api.hh.ru"}
         ]
     }
     mock_get.return_value = mock_response

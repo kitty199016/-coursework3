@@ -1,25 +1,21 @@
 import os
+import json
 from dotenv import load_dotenv
 
 from src.api_handler import HeadHunterAPI
 from src.db_utils import create_database, create_tables, insert_data_to_db
 from src.user_interface import run_user_interface
 
-# Список 10 целевых компаний (ID на hh.ru)
-# Яндекс, Сбер, VK, Т-Банк, Альфа-Банк, X5 Tech, Магнит, Лаборатория Касперского, Авито, Ozon
-EMPLOYER_IDS = [
-    "1740",
-    "3529",
-    "15477",
-    "78638",
-    "80",
-    "4233",
-    "4934",
-    "2180",
-    "24442",
-    "94323",
+EMPLOYERS_NAME = [
+    "Ozon Tech",
+    "Sber",
+    "Yandex",
+    "Tinkoff",
+    "VK"
 ]
 
+with open('data/hh_vacancies.json', 'r', encoding='utf-8') as file:
+    backup_json = json.load(file)
 
 def main() -> None:
     """Главная точка входа проекта."""
@@ -51,14 +47,29 @@ def main() -> None:
     employers_list = []
     vacancies_list = []
 
-    for emp_id in EMPLOYER_IDS:
-        emp_info = hh_api.get_employer_info(emp_id)
+    for emp_name in EMPLOYERS_NAME:
+        emp_id = hh_api.get_employers_id_by_company_name(emp_name)
+        if emp_id:
+            #Получилось загрузить из hh.ru
+            emp_info = hh_api.get_employer_info(emp_id)
+            items = hh_api.get_employer_vacancies(emp_id)
+        else:
+            #Не получилось забрать данные из hh.ru, забираем из файла
+            items = []
+            emp_id = None
+            emp_info = None
+            for item in backup_json["items"]:
+                if item["employer"]["name"] == emp_name:
+                    items.append(item)
+                    if not emp_id:
+                        emp_id = item["employer"]["id"]
+                        emp_info = item["employer"]
+
         if emp_info:
             employers_list.append(
                 {"id": int(emp_id), "name": emp_info["name"], "url": emp_info["alternate_url"]}
             )
 
-        items = hh_api.get_employer_vacancies(emp_id)
         for item in items:
             salary = item.get("salary")
             salary_from = salary.get("from") if salary else None
